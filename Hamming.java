@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 final class Hamming {
 
@@ -28,11 +30,15 @@ final class Hamming {
   private static int stopOverlapLevel = 2;
   private static int showLevel = maxSize;
 
+  private static final Pattern levelPattern = Pattern.compile("^[lL]\\D*(\\d+)\\D+(\\d+)$");
+  private static int[] skipAtStart;
+
   public static void main(String[] args) {
     if (args.length < ARGS) {
-      System.err.printf("Usage: java Hamming maxSize overlap stopOverlapLevel showLevel [point ...]\n"
+      System.err.printf("Usage: java Hamming maxSize overlap stopOverlapLevel showLevel"
+          + " [point ...] [LevelX=Y ...]\n"
           + "maxSize [1...%d]: Maximal size to check for. Try 16.\n"
-          + "overlap [0...%d]: Look for that much overlap as heuristics. Try 2.\n"
+          + "overlap [0...%d]: Look for that much overlap as heuristics. Try 1 or 2.\n"
           + "stopOverlapLevel [1...maxSize]: Stop heuristics after that level. Try 9.\n"
           + "showLevel [1...maxSize]: Show level if at most that large. Try 9.\n",
         TOTAL,
@@ -43,10 +49,20 @@ final class Hamming {
     overlap = Integer.parseInt(args[1]);
     stopOverlapLevel = Integer.parseInt(args[2]);
     showLevel = Integer.parseInt(args[3]);
+    skipAtStart = new int[maxSize + 1];
+    for (int i = 0; i <= maxSize; ++i) {
+      skipAtStart[i] = 0;
+    }
     List<Integer> first = new ArrayList<>();
     first.add(0);
     for (int i = ARGS; i < args.length; ++i) {
-      first.add(Integer.parseInt(args[i], 2));
+      String argument = args[i];
+      Matcher matcher = levelPattern.matcher(argument);
+      if (matcher.matches()) {
+        skipAtStart[Integer.parseInt(matcher.group(1))] = Integer.parseInt(matcher.group(2)) - 1;
+      } else {
+        first.add(Integer.parseInt(argument, 2));
+      }
     }
     Set<Integer> covered = covered(first);
     System.out.printf("Startsize %d covers %d|%d\n", first.size(), covered.size(), TOTAL);
@@ -75,6 +91,11 @@ final class Hamming {
     int bestAttempt = 0;
     int count = 0;
     for (int attempt : candidates) {
+      if (skipAtStart[size] > 0) {
+        --skipAtStart[size];
+        ++count;
+        continue;
+      }
       if (size <= showLevel) {
         System.out.printf("Level %d: %d|%d\n", size, ++count, candidates.size());
       }

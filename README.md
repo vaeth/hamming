@@ -29,7 +29,10 @@ with a java 8 compiler. No dependencies are needed.
 
 After that the usage is
 ```
-java Hamming maxSize overlap stopOverlapLevel showLevel [point ...]
+java Hamming maxSize overlap stopOverlapLevel showLevel [point...] [LevelX=Y...]
+```
+or
+```
 ```
 Explanations of the parameters:
 
@@ -58,11 +61,21 @@ Explanations of the parameters:
    progress indicator is printed (incl. how many steps will be contained in
    the main loop of this level.)
 5. `point` can be specified to pre-fill certain solution data. By default, the
-    point `000...0` is always auto-included in the list of points to be used,
-    but you can add more to force a specific type of solution:
-    You can simply add other “solution” points in binary notation.
+   point `000...0` is always auto-included in the list of points to be used,
+   but you can add more to force a specific type of solution:
+   You can simply add other “solution” points in binary notation.
+6. The `Level` arguments describe where the algorithm should start. If not
+   specified, every level starts at attempt 1, but you can specify a higher
+   number to skip some attempts at this level. For instance, the arguments
+   `Level5=2 Level6=5` mean that the algorithm should start in levels 1-4
+   with the first attempt, but in level 5 with the second attempt and inside
+   this second attempt in level 6 with the 5th attempt.
 
 A good call for trying is
+```
+java Hamming 16 1 9 9
+```
+or
 ```
 java Hamming 16 2 9 9
 ```
